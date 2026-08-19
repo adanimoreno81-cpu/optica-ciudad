@@ -898,7 +898,7 @@ function retakePhoto() {
 // ═══════════════════════════════════
 // CALIBRATION CANVAS
 // ═══════════════════════════════════
-let calibCanvas, calibCtx, calibImgW, calibImgH, calibScale;
+let calibCanvas, calibCtx, calibScale;
 
 function initCalibCanvas() {
   calibCanvas = document.getElementById('calib-canvas');
@@ -907,33 +907,82 @@ function initCalibCanvas() {
   state.calibPxPerMm = null;
   document.getElementById('btn-next-3').disabled = true;
   document.getElementById('calib-px-info').style.display = 'none';
+  document.getElementById('calib-mm').value = '';
 
-  const img = state.photoImg;
-  img.onload = drawCalibCanvas;
-  if (img.complete) drawCalibCanvas();
-
-  calibCanvas.removeEventListener('click', onCalibClick);
-  calibCanvas.removeEventListener('touchend', onCalibTouch);
-  calibCanvas.addEventListener('click', onCalibClick);
-  calibCanvas.addEventListener('touchend', onCalibTouch);
-}
-
-function drawCalibCanvas() {
+  // Dibujar imagen en canvas
   const img = state.photoImg;
   const wrap = document.getElementById('calib-canvas-wrap');
-  const maxW = wrap.clientWidth;
+  const maxW = wrap.clientWidth || window.innerWidth - 40;
   calibScale = maxW / img.naturalWidth;
   calibCanvas.width = maxW;
   calibCanvas.height = img.naturalHeight * calibScale;
   calibCtx.drawImage(img, 0, 0, calibCanvas.width, calibCanvas.height);
 
+  // Eventos táctiles y mouse — limpiar primero
+  const newCanvas = calibCanvas.cloneNode(true);
+  calibCanvas.parentNode.replaceChild(newCanvas, calibCanvas);
+  calibCanvas = newCanvas;
+  calibCtx = calibCanvas.getContext('2d');
+  calibCtx.drawImage(img, 0, 0, calibCanvas.width, calibCanvas.height);
+
+  calibCanvas.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const touch = e.changedTouches[0];
+    addCalibPoint(getTouchCanvasCoords(calibCanvas, touch));
+  }, { passive: false });
+
+  calibCanvas.addEventListener('click', function(e) {
+    addCalibPoint(getClickCanvasCoords(calibCanvas, e));
+  });
+}
+
+function getTouchCanvasCoords(canvas, touch) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return {
+    x: (touch.clientX - rect.left) * scaleX,
+    y: (touch.clientY - rect.top) * scaleY
+  };
+}
+
+function getClickCanvasCoords(canvas, e) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return {
+    x: (e.clientX - rect.left) * scaleX,
+    y: (e.clientY - rect.top) * scaleY
+  };
+}
+
+// Mantener compatibilidad con mark canvas
+function getCanvasCoords(canvas, e) {
+  return getClickCanvasCoords(canvas, e);
+}
+
+function drawCalibCanvas() {
+  const img = state.photoImg;
+  calibCtx.drawImage(img, 0, 0, calibCanvas.width, calibCanvas.height);
+
   state.calibPts.forEach((p, i) => {
+    // Círculo relleno
     calibCtx.beginPath();
-    calibCtx.arc(p.x, p.y, 8, 0, Math.PI * 2);
+    calibCtx.arc(p.x, p.y, 10, 0, Math.PI * 2);
     calibCtx.fillStyle = i === 0 ? '#f7a84f' : '#f74f8e';
     calibCtx.fill();
-    calibCtx.font = 'bold 11px Inter,system-ui';
-    calibCtx.fillText(i === 0 ? 'A' : 'B', p.x + 10, p.y - 4);
+    calibCtx.strokeStyle = '#fff';
+    calibCtx.lineWidth = 2;
+    calibCtx.stroke();
+    // Letra
+    calibCtx.fillStyle = '#fff';
+    calibCtx.font = 'bold 12px Inter,system-ui';
+    calibCtx.textAlign = 'center';
+    calibCtx.textBaseline = 'middle';
+    calibCtx.fillText(i === 0 ? 'A' : 'B', p.x, p.y);
+    calibCtx.textAlign = 'left';
+    calibCtx.textBaseline = 'alphabetic';
   });
 
   if (state.calibPts.length === 2) {
@@ -941,40 +990,28 @@ function drawCalibCanvas() {
     calibCtx.beginPath();
     calibCtx.moveTo(a.x, a.y);
     calibCtx.lineTo(b.x, b.y);
-    calibCtx.strokeStyle = '#fff';
-    calibCtx.lineWidth = 1.5;
-    calibCtx.setLineDash([4, 4]);
+    calibCtx.strokeStyle = 'rgba(255,255,255,0.8)';
+    calibCtx.lineWidth = 2;
+    calibCtx.setLineDash([6, 4]);
     calibCtx.stroke();
     calibCtx.setLineDash([]);
   }
 
-  // Update status
   const s = document.getElementById('calib-status');
   if (state.calibPts.length === 0) s.innerHTML = 'Tocá el <strong>Punto A</strong> en la imagen';
   else if (state.calibPts.length === 1) s.innerHTML = 'Ahora tocá el <strong>Punto B</strong>';
-  else s.innerHTML = '✓ Dos puntos marcados. Ingresá la medida en mm.';
+  else s.innerHTML = '✓ Puntos marcados. Ingresá la medida en mm y tocá Continuar.';
 
   updateCalibRatio();
 }
 
-function getCanvasCoords(canvas, e) {
-  const rect = canvas.getBoundingClientRect();
-  let cx, cy;
-  if (e.touches) {
-    cx = e.touches[0].clientX - rect.left;
-    cy = e.touches[0].clientY - rect.top;
-  } else {
-    cx = e.clientX - rect.left;
-    cy = e.clientY - rect.top;
-  }
-  return { x: cx * (canvas.width / rect.width), y: cy * (canvas.height / rect.height) };
-}
-
-function onCalibClick(e) { addCalibPoint(getCanvasCoords(calibCanvas, e)); }
-function onCalibTouch(e) { e.preventDefault(); addCalibPoint(getCanvasCoords(calibCanvas, e.changedTouches[0])); }
-
 function addCalibPoint(pt) {
-  if (state.calibPts.length >= 2) return;
+  if (state.calibPts.length >= 2) {
+    // Si ya hay 2, resetear y empezar de nuevo
+    state.calibPts = [];
+    state.calibPxPerMm = null;
+    document.getElementById('btn-next-3').disabled = true;
+  }
   state.calibPts.push(pt);
   drawCalibCanvas();
 }
@@ -984,23 +1021,27 @@ function resetCalib() {
   state.calibPxPerMm = null;
   document.getElementById('btn-next-3').disabled = true;
   document.getElementById('calib-px-info').style.display = 'none';
+  document.getElementById('calib-mm').value = '';
   drawCalibCanvas();
 }
 
 function updateCalibRatio() {
   if (state.calibPts.length < 2) return;
   const mm = parseFloat(document.getElementById('calib-mm').value);
-  if (!mm || mm <= 0) return;
+  if (!mm || mm <= 0) {
+    document.getElementById('btn-next-3').disabled = true;
+    return;
+  }
   const [a, b] = state.calibPts;
-  const pxDist = Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2);
-  // pxDist is in display pixels, convert to original image pixels
-  const origPxDist = pxDist / calibScale * (state.photoImg.naturalWidth / calibCanvas.width * calibScale);
-  // simpler: pxDist is already in canvas px, calibScale maps original px to canvas px
-  const origPx = pxDist / calibScale;
-  state.calibPxPerMm = origPx / mm;
+  // Distancia en píxeles del canvas (que ya está en escala calibScale respecto al original)
+  const canvasPxDist = Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2);
+  // Convertir a píxeles de la imagen original
+  const origPxDist = canvasPxDist / calibScale;
+  // Ratio: píxeles originales por mm
+  state.calibPxPerMm = origPxDist / mm;
   state.calibMm = mm;
 
-  document.getElementById('calib-px-val').textContent = Math.round(pxDist);
+  document.getElementById('calib-px-val').textContent = Math.round(canvasPxDist);
   document.getElementById('calib-ratio-val').textContent = state.calibPxPerMm.toFixed(2);
   document.getElementById('calib-px-info').style.display = 'block';
   document.getElementById('btn-next-3').disabled = false;
@@ -1024,12 +1065,23 @@ function initMarkCanvas() {
   markCanvas.width = maxW;
   markCanvas.height = img.naturalHeight * markScale;
 
+  // Reemplazar el canvas para limpiar listeners viejos
+  const newMark = markCanvas.cloneNode(true);
+  markCanvas.parentNode.replaceChild(newMark, markCanvas);
+  markCanvas = newMark;
+  markCtx = markCanvas.getContext('2d');
   drawMarkCanvas();
 
-  markCanvas.removeEventListener('click', onMarkClick);
-  markCanvas.removeEventListener('touchend', onMarkTouch);
-  markCanvas.addEventListener('click', onMarkClick);
-  markCanvas.addEventListener('touchend', onMarkTouch);
+  markCanvas.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const touch = e.changedTouches[0];
+    doMark(getTouchCanvasCoords(markCanvas, touch));
+  }, { passive: false });
+
+  markCanvas.addEventListener('click', function(e) {
+    doMark(getClickCanvasCoords(markCanvas, e));
+  });
 }
 
 function drawMarkCanvas() {
@@ -1100,8 +1152,7 @@ function toOrig(cx, cy) {
   return { x: cx / markScale, y: cy / markScale };
 }
 
-function onMarkClick(e) { doMark(getCanvasCoords(markCanvas, e)); }
-function onMarkTouch(e) { e.preventDefault(); doMark(getCanvasCoords(markCanvas, e.changedTouches[0])); }
+
 
 function doMark(cPt) {
   if (!state.activePoint) { showToast('Seleccioná un punto primero'); return; }
