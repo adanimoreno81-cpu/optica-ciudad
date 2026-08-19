@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Parámetros Ópticos</title>
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Óptica Ciudad">
+<meta name="theme-color" content="#0f1117">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:system-ui,-apple-system,sans-serif;background:#0f1117;color:#e8eaf2;min-height:100vh;overflow-x:hidden}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#1a1d27;border-bottom:1px solid #2e3350;position:sticky;top:0;z-index:50}
+header h1{font-size:15px;font-weight:700}
+#hpat{font-size:11px;color:#4f8ef7;background:rgba(79,142,247,.15);padding:3px 10px;border-radius:20px;font-weight:600}
+nav{display:flex;background:#1a1d27;border-bottom:1px solid #2e3350;overflow-x:auto}
+nav::-webkit-scrollbar{display:none}
+.tab{flex:1;min-width:60px;padding:9px 4px 7px;text-align:center;font-size:9px;font-weight:700;letter-spacing:.05em;color:#5a5f7a;border-bottom:2px solid transparent;cursor:default;text-transform:uppercase}
+.tab.active{color:#4f8ef7;border-bottom-color:#4f8ef7}
+.tab.done{color:#7dd3b0}
+.tab span{display:block;font-size:15px;margin-bottom:1px}
+.scr{display:none;padding:16px;animation:fi .2s ease}
+.scr.on{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.card{background:#1a1d27;border:1px solid #2e3350;border-radius:12px;padding:16px;margin-bottom:14px}
+.ctit{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#8b90a8;margin-bottom:12px}
+label{display:block;font-size:12px;font-weight:600;color:#8b90a8;margin-bottom:5px}
+input[type=text],input[type=number]{width:100%;background:#0f1117;border:1px solid #2e3350;border-radius:8px;padding:10px 12px;font-size:15px;color:#e8eaf2;font-family:inherit;outline:none;margin-bottom:12px}
+input:focus{border-color:#4f8ef7}
+.btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:13px;border-radius:10px;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.btn:active{opacity:.75}
+.bp{background:#4f8ef7;color:#fff}
+.bs{background:#222636;color:#e8eaf2;border:1px solid #2e3350}
+.bd{background:transparent;color:#f76f6f;border:1px solid #f76f6f}
+.bg{background:#7dd3b0;color:#0f1117}
+.row{display:flex;gap:10px;margin-top:10px}
+.row .btn{flex:1}
+.info{background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);border-radius:8px;padding:12px;font-size:12px;color:#8b90a8;line-height:1.7;margin-bottom:14px}
+.info b{color:#4f8ef7}
+
+/* FOTO */
+#cam-box{position:relative;background:#000;border-radius:12px;overflow:hidden;margin-bottom:12px;min-height:200px;display:flex;align-items:center;justify-content:center}
+#vid,#prev-img{width:100%;display:none;border-radius:12px}
+#cam-ph{display:flex;flex-direction:column;align-items:center;gap:8px;color:#5a5f7a;padding:40px 0}
+#cam-ph svg{width:44px;height:44px;opacity:.4}
+.cbts{display:flex;gap:8px;flex-wrap:wrap}
+.cbts .btn{flex:1;min-width:120px;padding:10px;font-size:13px}
+#cvs{display:none}
+#finput{display:none}
+
+/* CANVAS CALIBRACIÓN Y MARCADO */
+.cv-wrap{position:relative;border-radius:12px;overflow:hidden;background:#000;margin-bottom:12px;user-select:none}
+.cv-wrap canvas{display:block;width:100%;touch-action:none;cursor:crosshair}
+.zoom-bar{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px}
+.zbtn{background:#222636;border:1px solid #2e3350;color:#e8eaf2;border-radius:8px;width:38px;height:38px;font-size:20px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;flex-shrink:0;line-height:1}
+.zbtn:active{background:#2e3350}
+.zlbl{font-size:11px;color:#8b90a8;min-width:52px;text-align:center;font-weight:600}
+.cstatus{font-size:12px;color:#8b90a8;text-align:center;padding:8px 12px;background:#222636;border-radius:8px;margin-bottom:12px;line-height:1.5}
+.cstatus b{color:#4f8ef7}
+.dim-row{display:flex;gap:10px;align-items:flex-end;margin-bottom:12px}
+.dim-row>div{flex:1}
+.dim-row input{margin-bottom:0}
+.dim-row .btn{width:auto;padding:10px 14px;font-size:13px;flex-shrink:0}
+
+/* PUNTOS */
+.ptgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.ptbtn{padding:10px 6px;border-radius:8px;border:1.5px solid #2e3350;background:#222636;color:#8b90a8;font-size:11px;font-weight:700;cursor:pointer;text-align:center;font-family:inherit;transition:all .15s;letter-spacing:.02em}
+.ptbtn:active{transform:scale(.97)}
+.ptbtn.sel{border-color:#4f8ef7;background:rgba(79,142,247,.15);color:#4f8ef7}
+.ptbtn.ok{border-color:#7dd3b0;background:rgba(125,211,176,.1);color:#7dd3b0}
+.ptbtn .ico{font-size:16px;display:block;margin-bottom:3px}
+.slbl{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#5a5f7a;margin:4px 0 8px}
+.pbar-wrap{height:4px;background:#2e3350;border-radius:2px;margin-bottom:10px;overflow:hidden}
+.pbar{height:100%;background:#4f8ef7;border-radius:2px;transition:width .3s}
+#minstr{font-size:12px;color:#4f8ef7;text-align:center;margin-bottom:12px;font-weight:600;line-height:1.4}
+
+/* RESULTADOS */
+.rhead{display:flex;align-items:center;justify-content:space-between;background:#1a1d27;border:1px solid #2e3350;border-radius:12px;padding:14px;margin-bottom:14px}
+.rname{font-size:17px;font-weight:800}
+.rdate{font-size:11px;color:#5a5f7a;margin-top:2px}
+.rthumb{width:52px;height:52px;border-radius:8px;object-fit:cover;border:2px solid #2e3350;flex-shrink:0}
+.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px}
+.ri{background:#222636;border:1px solid #2e3350;border-radius:10px;padding:12px 10px;text-align:center}
+.ri.fw{grid-column:1/-1}
+.rl{font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#5a5f7a;margin-bottom:5px}
+.rv{font-size:22px;font-weight:800;color:#4f8ef7;letter-spacing:-.02em;line-height:1}
+.ru{font-size:11px;color:#8b90a8;margin-top:2px}
+.rsub{font-size:10px;color:#8b90a8;margin-top:3px}
+.rtit{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#5a5f7a;margin:16px 0 8px;padding-bottom:5px;border-bottom:1px solid #2e3350}
+
+/* MODAL */
+#moverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:flex-end;justify-content:center}
+#moverlay.on{display:flex}
+#modal{background:#1a1d27;border-radius:16px 16px 0 0;padding:24px 20px 36px;width:100%;max-width:480px;border-top:1px solid #2e3350}
+#modal h3{font-size:16px;font-weight:700;margin-bottom:8px}
+#modal p{font-size:13px;color:#8b90a8;margin-bottom:18px;line-height:1.6}
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(70px);background:#222636;border:1px solid #2e3350;border-radius:24px;padding:9px 18px;font-size:13px;font-weight:600;z-index:300;transition:transform .3s;white-space:nowrap}
+#toast.on{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚗️ Parámetros Ópticos</h1>
+  <span id="hpat">Sin paciente</span>
+</header>
+
+<nav id="nav">
+  <div class="tab active" id="t1"><span>①</span>PACIENTE</div>
+  <div class="tab" id="t2"><span>②</span>FOTO</div>
+  <div class="tab" id="t3"><span>③</span>ESCALA</div>
+  <div class="tab" id="t4"><span>④</span>PUNTOS</div>
+  <div class="tab" id="t5"><span>⑤</span>RESULT.</div>
+</nav>
+
+<!-- ① PACIENTE -->
+<div class="scr on" id="s1">
+  <div class="card">
+    <div class="ctit">Datos del paciente</div>
+    <label>Nombre y apellido</label>
+    <input type="text" id="inp-name" placeholder="Ej: García, María" autocomplete="off">
+    <label>Observaciones (opcional)</label>
+    <input type="text" id="inp-notes" placeholder="Ej: montura redonda pasta negra">
+  </div>
+  <div class="info"><b>¿Cómo funciona?</b><br>Tomás una foto de frente con la montura puesta, marcás los puntos clave sobre la imagen, y la app calcula todas las medidas automáticamente.</div>
+  <button class="btn bp" onclick="go(2)">Continuar →</button>
+</div>
+
+<!-- ② FOTO -->
+<div class="scr" id="s2">
+  <div class="card">
+    <div class="ctit">Foto del paciente</div>
+    <div id="cam-box">
+      <video id="vid" autoplay playsinline></video>
+      <img id="prev-img" alt="foto">
+      <div id="cam-ph">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <p style="font-size:13px">Abrí la cámara o subí una foto</p>
+      </div>
+    </div>
+    <canvas id="cvs"></canvas>
+    <div class="cbts">
+      <button class="btn bs" id="bcam" onclick="startCam()">📷 Cámara</button>
+      <button class="btn bs" id="bcap" style="display:none" onclick="capPhoto()">🔴 Capturar</button>
+      <button class="btn bs" onclick="document.getElementById('finput').click()">🖼 Subir foto</button>
+      <button class="btn bd" id="bret" style="display:none" onclick="retake()">↺ Repetir</button>
+    </div>
+    <input type="file" id="finput" accept="image/*" onchange="loadFile(event)">
+  </div>
+  <div class="info">El paciente debe mirar de frente, con la montura en posición normal de uso.</div>
+  <div class="row">
+    <button class="btn bs" onclick="go(1)">← Atrás</button>
+    <button class="btn bp" id="bn2" onclick="go(3)" disabled>Continuar →</button>
+  </div>
+</div>
+
+<!-- ③ CALIBRACIÓN -->
+<div class="scr" id="s3">
+  <div class="card">
+    <div class="ctit">Calibración de escala</div>
+    <p style="font-size:12px;color:#8b90a8;margin-bottom:12px;line-height:1.7">Tocá <b style="color:#f7a84f">Punto A</b> y luego <b style="color:#f74f8e">Punto B</b> sobre la imagen, en dos extremos de una medida que conozcas. Después ingresá esa medida en mm.</p>
+    <div class="cv-wrap" id="calib-wrap">
+      <canvas id="cc"></canvas>
+    </div>
+    <div class="zoom-bar"><button class="zbtn" onclick="zoom('cc',-.3)">−</button><span class="zlbl" id="zlbl-cc">100%</span><button class="zbtn" onclick="zoom('cc',.3)">+</button></div>
+    <div class="cstatus" id="cst">Tocá el <b>Punto A</b> en la imagen</div>
+    <div class="dim-row">
+      <div>
+        <label>Medida real (mm)</label>
+        <input type="number" id="cmm" placeholder="Ej: 17" min="1" max="200" step="0.5" inputmode="decimal">
+      </div>
+      <button class="btn bs" style="margin-bottom:0;height:42px;padding:0 14px;font-size:13px" onclick="resetCalib()">↺</button>
+    </div>
+    <div id="cinfo" style="display:none;font-size:11px;color:#5a5f7a;margin-bottom:8px;text-align:center">
+      Escala: <b id="cratio" style="color:#4f8ef7">—</b> px/mm
+    </div>
+  </div>
+  <div class="info"><b>Medidas comunes:</b><br>• Ancho del puente (figura en la patilla, ej: 17 o 18 mm)<br>• Alto del aro si lo conocés<br>• DNP aproximada del paciente</div>
+  <div class="row">
+    <button class="btn bs" onclick="go(2)">← Atrás</button>
+    <button class="btn bp" id="bn3" onclick="go(4)" disabled>Continuar →</button>
+  </div>
+</div>
+
+<!-- ④ MARCADO -->
+<div class="scr" id="s4">
+  <div class="card">
+    <div class="ctit">Marcado de puntos clave</div>
+    <div class="cv-wrap" id="mark-wrap">
+      <canvas id="mc"></canvas>
+    </div>
+    <div class="zoom-bar"><button class="zbtn" onclick="zoom('mc',-.3)">−</button><span class="zlbl" id="zlbl-mc">100%</span><button class="zbtn" onclick="zoom('mc',.3)">+</button></div>
+    <div class="pbar-wrap"><div class="pbar" id="pb" style="width:0%"></div></div>
+    <div id="minstr">Seleccioná un punto y tocalo en la imagen</div>
+
+    <div class="slbl">Pupilas</div>
+    <div class="ptgrid">
+      <button class="ptbtn" id="pp-pd-r" onclick="selPt('pd-r')"><span class="ico">👁</span>Pupila OD</button>
+      <button class="ptbtn" id="pp-pd-l" onclick="selPt('pd-l')"><span class="ico">👁</span>Pupila OI</button>
+    </div>
+    <div class="slbl">Aro derecho (OD)</div>
+    <div class="ptgrid">
+      <button class="ptbtn" id="pp-r-top" onclick="selPt('r-top')"><span class="ico">⬆</span>Borde superior</button>
+      <button class="ptbtn" id="pp-r-bot" onclick="selPt('r-bot')"><span class="ico">⬇</span>Borde inferior</button>
+      <button class="ptbtn" id="pp-r-nas" onclick="selPt('r-nas')"><span class="ico">◀</span>Borde nasal</button>
+      <button class="ptbtn" id="pp-r-tem" onclick="selPt('r-tem')"><span class="ico">▶</span>Borde temporal</button>
+    </div>
+    <div class="slbl">Aro izquierdo (OI)</div>
+    <div class="ptgrid">
+      <button class="ptbtn" id="pp-l-top" onclick="selPt('l-top')"><span class="ico">⬆</span>Borde superior</button>
+      <button class="ptbtn" id="pp-l-bot" onclick="selPt('l-bot')"><span class="ico">⬇</span>Borde inferior</button>
+      <button class="ptbtn" id="pp-l-nas" onclick="selPt('l-nas')"><span class="ico">▶</span>Borde nasal</button>
+      <button class="ptbtn" id="pp-l-tem" onclick="selPt('l-tem')"><span class="ico">◀</span>Borde temporal</button>
+    </div>
+    <div class="slbl">Puente</div>
+    <div class="ptgrid">
+      <button class="ptbtn" id="pp-br-r" onclick="selPt('br-r')"><span class="ico">🔲</span>Inicio puente OD</button>
+      <button class="ptbtn" id="pp-br-l" onclick="selPt('br-l')"><span class="ico">🔲</span>Fin puente OI</button>
+    </div>
+    <button class="btn bd" style="font-size:12px;padding:9px;margin-top:4px" onclick="resetPts()">↺ Borrar todos los puntos</button>
+  </div>
+  <div class="row">
+    <button class="btn bs" onclick="go(3)">← Atrás</button>
+    <button class="btn bp" id="bn4" onclick="calcular()" disabled>Calcular →</button>
+  </div>
+</div>
+
+<!-- ⑤ RESULTADOS -->
+<div class="scr" id="s5">
+  <div class="rhead">
+    <div>
+      <div class="rname" id="rn">—</div>
+      <div class="rdate" id="rd">—</div>
+    </div>
+    <img class="rthumb" id="rthumb" src="" alt="">
+  </div>
+
+  <div class="rtit">Distancia nasopupilar</div>
+  <div class="rgrid">
+    <div class="ri fw"><div class="rl">DNP Total</div><div class="rv" id="v-dnpt">—</div><div class="ru">mm</div></div>
+    <div class="ri"><div class="rl">DNP OD</div><div class="rv" id="v-dnpr">—</div><div class="ru">mm</div></div>
+    <div class="ri"><div class="rl">DNP OI</div><div class="rv" id="v-dnpl">—</div><div class="ru">mm</div></div>
+    <div class="ri"><div class="rl">Puente</div><div class="rv" id="v-br">—</div><div class="ru">mm</div></div>
+  </div>
+
+  <div class="rtit">Altura pupilar — Lejos</div>
+  <div class="rgrid">
+    <div class="ri"><div class="rl">Altura OD</div><div class="rv" id="v-phr">—</div><div class="ru">mm desde borde inf.</div></div>
+    <div class="ri"><div class="rl">Altura OI</div><div class="rv" id="v-phl">—</div><div class="ru">mm desde borde inf.</div></div>
+  </div>
+
+  <div class="rtit">Altura pupilar — Cerca</div>
+  <div class="rgrid">
+    <div class="ri"><div class="rl">Cerca OD</div><div class="rv" id="v-nr">—</div><div class="ru">mm</div><div class="rsub">lejos − 5 mm</div></div>
+    <div class="ri"><div class="rl">Cerca OI</div><div class="rv" id="v-nl">—</div><div class="ru">mm</div><div class="rsub">lejos − 5 mm</div></div>
+  </div>
+
+  <div class="rtit">Medidas del armazón</div>
+  <div class="rgrid">
+    <div class="ri"><div class="rl">Alto aro OD</div><div class="rv" id="v-hr">—</div><div class="ru">mm</div></div>
+    <div class="ri"><div class="rl">Alto aro OI</div><div class="rv" id="v-hl">—</div><div class="ru">mm</div></div>
+    <div class="ri"><div class="rl">Largo aro OD</div><div class="rv" id="v-wr">—</div><div class="ru">mm</div></div>
+    <div class="ri"><div class="rl">Largo aro OI</div><div class="rv" id="v-wl">—</div><div class="ru">mm</div></div>
+    <div class="ri"><div class="rl">Diagonal OD</div><div class="rv" id="v-dr">—</div><div class="ru">mm</div><div class="rsub">eje <span id="v-axr">—</span>°</div></div>
+    <div class="ri"><div class="rl">Diagonal OI</div><div class="rv" id="v-dl">—</div><div class="ru">mm</div><div class="rsub">eje <span id="v-axl">—</span>°</div></div>
+  </div>
+
+  <button class="btn bp" style="margin-top:6px" onclick="copiar()">📋 Copiar medidas</button>
+  <button class="btn bs" style="margin-top:10px" onclick="nueva()">＋ Nueva medición</button>
+
+  <div id="moverlay">
+    <div id="modal">
+      <h3>¿Nueva medición?</h3>
+      <p>Se va a borrar la sesión actual. ¿Querés continuar?</p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button class="btn bp" onclick="confirmarNueva()">Sí, nueva medición</button>
+        <button class="btn bs" onclick="cerrarModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════
+// ESTADO
+// ═══════════════════════════════════════
+var S = {
+  name:'', notes:'',
+  photoUrl: null, photoImg: null,
+  calibPts: [],       // coords en píxeles del canvas
+  pxPerMm: null,
+  calibScale: 1,
+  pts: {},            // coords en píxeles ORIGINALES de la imagen
+  activePt: null
+};
+
+var PTDEFS = [
+  {id:'pd-r', lbl:'Pupila OD',        col:'#4f8ef7', r:8},
+  {id:'pd-l', lbl:'Pupila OI',        col:'#4f8ef7', r:8},
+  {id:'r-top',lbl:'Borde sup OD',     col:'#f7a84f', r:6},
+  {id:'r-bot',lbl:'Borde inf OD',     col:'#f7a84f', r:6},
+  {id:'r-nas',lbl:'Borde nasal OD',   col:'#f7a84f', r:6},
+  {id:'r-tem',lbl:'Borde temporal OD',col:'#f7a84f', r:6},
+  {id:'l-top',lbl:'Borde sup OI',     col:'#e87af7', r:6},
+  {id:'l-bot',lbl:'Borde inf OI',     col:'#e87af7', r:6},
+  {id:'l-nas',lbl:'Borde nasal OI',   col:'#e87af7', r:6},
+  {id:'l-tem',lbl:'Borde temporal OI',col:'#e87af7', r:6},
+  {id:'br-r', lbl:'Inicio puente',    col:'#7dd3b0', r:6},
+  {id:'br-l', lbl:'Fin puente',       col:'#7dd3b0', r:6},
+];
+var TOTAL = PTDEFS.length;
+
+// ═══════════════════════════════════════
+// NAVEGACIÓN
+// ═══════════════════════════════════════
+function go(n) {
+  if (n===2) {
+    S.name = document.getElementById('inp-name').value.trim() || 'Paciente';
+    S.notes = document.getElementById('inp-notes').value.trim();
+    document.getElementById('hpat').textContent = S.name;
+  }
+  if (n===3 && !S.photoUrl) { toast('Primero tomá o subí una foto'); return; }
+  if (n===3) { initCalib(); }
+  if (n===4) { initMark(); }
+
+  for (var i=1;i<=5;i++) {
+    document.getElementById('s'+i).classList.remove('on');
+    var t = document.getElementById('t'+i);
+    t.classList.remove('active','done');
+    if (i<n) t.classList.add('done');
+    if (i===n) t.classList.add('active');
+  }
+  document.getElementById('s'+n).classList.add('on');
+  window.scrollTo(0,0);
+}
+
+// ═══════════════════════════════════════
+// CÁMARA
+// ═══════════════════════════════════════
+var stream = null;
+function startCam() {
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}})
+    .then(function(st){
+      stream = st;
+      var v = document.getElementById('vid');
+      v.srcObject = st;
+      v.style.display='block';
+      document.getElementById('cam-ph').style.display='none';
+      document.getElementById('bcam').style.display='none';
+      document.getElementById('bcap').style.display='';
+    })
+    .catch(function(){ toast('No se pudo abrir la cámara. Usá Subir foto.'); });
+}
+function capPhoto() {
+  var v=document.getElementById('vid');
+  var c=document.getElementById('cvs');
+  c.width=v.videoWidth; c.height=v.videoHeight;
+  c.getContext('2d').drawImage(v,0,0);
+  S.photoUrl = c.toDataURL('image/jpeg',.92);
+  stopStream(); showPreview();
+}
+function stopStream() {
+  if(stream){stream.getTracks().forEach(function(t){t.stop()});stream=null;}
+}
+function loadFile(e) {
+  var f=e.target.files[0]; if(!f)return;
+  var r=new FileReader();
+  r.onload=function(ev){ S.photoUrl=ev.target.result; stopStream(); showPreview(); };
+  r.readAsDataURL(f);
+  e.target.value='';
+}
+function showPreview() {
+  var img=document.getElementById('prev-img');
+  img.src=S.photoUrl; img.style.display='block';
+  document.getElementById('vid').style.display='none';
+  document.getElementById('cam-ph').style.display='none';
+  document.getElementById('bcam').style.display='none';
+  document.getElementById('bcap').style.display='none';
+  document.getElementById('bret').style.display='';
+  document.getElementById('bn2').disabled=false;
+  S.photoImg = new Image();
+  S.photoImg.src = S.photoUrl;
+}
+function retake() {
+  S.photoUrl=null; S.photoImg=null;
+  document.getElementById('prev-img').style.display='none';
+  document.getElementById('bret').style.display='none';
+  document.getElementById('bn2').disabled=true;
+  document.getElementById('bcam').style.display='';
+  document.getElementById('cam-ph').style.display='flex';
+}
+
+// ═══════════════════════════════════════
+// CALIBRACIÓN — canvas simple y robusto
+// ═══════════════════════════════════════
+var cc, cx2;  // canvas calibración y su contexto
+var zoomState = {}; // {canvasId: {scale, ox, oy}}
+
+// zoomState: {id: {scale, panX, panY}}
+// zoom real: redibujamos el canvas con mayor zoom y pan
+// el canvas interno siempre tiene las coords originales (fullRes)
+// el canvas display es más pequeño; usamos un canvas fullRes separado
+
+var fullResCanvases = {}; // {id: offscreen canvas con la imagen+marcas a resolución completa}
+
+function zoom(id, delta) {
+  var z = zoomState[id] || {scale:1, panX:0, panY:0};
+  var newScale = Math.min(6, Math.max(1, parseFloat((z.scale + delta).toFixed(2))));
+  if (newScale === z.scale) return;
+  if (newScale <= 1) { z.panX=0; z.panY=0; }
+  z.scale = newScale;
+  zoomState[id] = z;
+  redrawZoom(id);
+  var lbl = document.getElementById('zlbl-'+id);
+  if(lbl) lbl.textContent = Math.round(z.scale*100)+'%';
+}
+
+function redrawZoom(id) {
+  var canvas = document.getElementById(id);
+  var ctx = canvas.getContext('2d');
+  var src = fullResCanvases[id];
+  if (!src) return;
+  var z = zoomState[id] || {scale:1, panX:0, panY:0};
+  var dw = canvas.width, dh = canvas.height;
+  // Fuente: recortamos la porción visible en función del zoom y pan
+  var sw = Math.round(src.width / z.scale);
+  var sh = Math.round(src.height / z.scale);
+  // Clampear pan para no salir del borde
+  var maxPanX = src.width - sw;
+  var maxPanY = src.height - sh;
+  z.panX = Math.max(0, Math.min(z.panX, maxPanX));
+  z.panY = Math.max(0, Math.min(z.panY, maxPanY));
+  ctx.clearRect(0,0,dw,dh);
+  ctx.drawImage(src, z.panX, z.panY, sw, sh, 0, 0, dw, dh);
+}
+
+function initZoom(id) {
+  zoomState[id] = {scale:1, panX:0, panY:0};
+  var canvas = document.getElementById(id);
+  var lbl = document.getElementById('zlbl-'+id);
+  if(lbl) lbl.textContent = '100%';
+
+  // Pinch zoom y pan con dos dedos
+  var lastDist = null, lastScale = 1;
+  var lastMid = null;
+  canvas.addEventListener('touchstart', function(e){
+    if(e.touches.length===2){
+      lastDist = Math.hypot(
+        e.touches[0].clientX-e.touches[1].clientX,
+        e.touches[0].clientY-e.touches[1].clientY
+      );
+      lastScale = (zoomState[id]||{scale:1}).scale;
+      lastMid = {
+        x:(e.touches[0].clientX+e.touches[1].clientX)/2,
+        y:(e.touches[0].clientY+e.touches[1].clientY)/2
+      };
+      window._pinching = true;
+    }
+  }, {passive:true});
+  canvas.addEventListener('touchmove', function(e){
+    if(e.touches.length===2){
+      e.preventDefault();
+      var d = Math.hypot(
+        e.touches[0].clientX-e.touches[1].clientX,
+        e.touches[0].clientY-e.touches[1].clientY
+      );
+      if(!lastDist) return;
+      var z = zoomState[id] || {scale:1,panX:0,panY:0};
+      z.scale = Math.min(6, Math.max(1, lastScale * (d/lastDist)));
+      if(z.scale<=1){z.panX=0;z.panY=0;}
+      zoomState[id] = z;
+      redrawZoom(id);
+      var lbl = document.getElementById('zlbl-'+id);
+      if(lbl) lbl.textContent = Math.round(z.scale*100)+'%';
+    }
+  }, {passive:false});
+  canvas.addEventListener('touchend', function(e){
+    if(e.touches.length<2){lastDist=null;setTimeout(function(){window._pinching=false;},100);}
+  }, {passive:true});
+}
+
+function canvasToSrcCoords(id, clientX, clientY) {
+  // Convierte coords de pantalla a coords del fullRes canvas
+  var canvas = document.getElementById(id);
+  var rect = canvas.getBoundingClientRect();
+  var z = zoomState[id] || {scale:1, panX:0, panY:0};
+  var src = fullResCanvases[id];
+  if(!src) return {x:0,y:0};
+  // fracción dentro del canvas display
+  var fx = (clientX - rect.left) / rect.width;
+  var fy = (clientY - rect.top) / rect.height;
+  // porción visible del src
+  var sw = src.width / z.scale;
+  var sh = src.height / z.scale;
+  return {
+    x: z.panX + fx * sw,
+    y: z.panY + fy * sh
+  };
+}
+
+function initCalib() {
+  S.calibPts = [];
+  S.pxPerMm = null;
+  document.getElementById('cmm').value='';
+  document.getElementById('bn3').disabled=true;
+  document.getElementById('cinfo').style.display='none';
+
+  cc = document.getElementById('cc');
+  cx2 = cc.getContext('2d');
+
+  var img = S.photoImg;
+  var wrap = document.getElementById('calib-wrap');
+  var w = wrap.offsetWidth || 320;
+  S.calibScale = w / img.naturalWidth;
+  cc.width = w;
+  cc.height = Math.round(img.naturalHeight * S.calibScale);
+  cx2.drawImage(img, 0, 0, cc.width, cc.height);
+  updateCalibStatus();
+  initZoom('cc');
+
+  cc.onpointerdown = null;
+  cc._calibHandler && cc.removeEventListener('pointerdown', cc._calibHandler);
+  cc._calibHandler = function(e) {
+    if(e.pointerType==='touch' && e.isPrimary===false) return; // ignorar segundo dedo
+    // Si hay zoom activo con dos dedos, ignorar
+    if(window._pinching) return;
+    e.preventDefault();
+    if (S.calibPts.length >= 2) return;
+    var z = zoomState['cc'] || {scale:1,ox:0,oy:0};
+    var rect = cc.getBoundingClientRect();
+    // Coordenadas en el canvas teniendo en cuenta el zoom CSS
+    // El canvas está escalado por CSS, pero sus píxeles internos no cambian
+    // rect.width = cc.width * z.scale (aprox, sin considerar offset)
+    var canvasDisplayW = rect.width;   // ancho visual real
+    var canvasDisplayH = rect.height;  // alto visual real
+    var x = ((e.clientX - rect.left) / canvasDisplayW) * cc.width;
+    var y = ((e.clientY - rect.top)  / canvasDisplayH) * cc.height;
+    S.calibPts.push({x:x, y:y});
+    drawCalib();
+    updateCalibStatus();
+    if (S.calibPts.length === 2) tryCalcRatio();
+  };
+  cc.addEventListener('pointerdown', cc._calibHandler, {passive:false});
+}
+
+function onCalibPointer(e) {} // legacy stub
+
+function drawCalib() {
+  // Redibujar en fullRes primero, luego aplicar zoom
+  var img = S.photoImg;
+  var fr = fullResCanvases['cc'];
+  if(!fr) return;
+  var fctx = fr.getContext('2d');
+  fctx.drawImage(img, 0, 0, fr.width, fr.height);
+  var cols = ['#f7a84f','#f74f8e'];
+  var labs = ['A','B'];
+  S.calibPts.forEach(function(p,i){
+    fctx.beginPath();
+    fctx.arc(p.x, p.y, 12, 0, Math.PI*2);
+    fctx.fillStyle = cols[i];
+    fctx.fill();
+    fctx.strokeStyle='#fff'; fctx.lineWidth=2.5; fctx.stroke();
+    fctx.fillStyle='#fff';
+    fctx.font='bold 13px system-ui';
+    fctx.textAlign='center'; fctx.textBaseline='middle';
+    fctx.fillText(labs[i], p.x, p.y);
+    fctx.textAlign='left'; fctx.textBaseline='alphabetic';
+  });
+  if (S.calibPts.length===2) {
+    var a=S.calibPts[0], b=S.calibPts[1];
+    cx2.beginPath(); cx2.moveTo(a.x,a.y); cx2.lineTo(b.x,b.y);
+    cx2.strokeStyle='rgba(255,255,255,.7)'; cx2.lineWidth=2;
+    cx2.setLineDash([6,4]); cx2.stroke(); cx2.setLineDash([]);
+  }
+}
+
+function updateCalibStatus() {
+  var st = document.getElementById('cst');
+  var n = S.calibPts.length;
+  if (n===0) st.innerHTML='Tocá el <b>Punto A</b> en la imagen';
+  else if (n===1) st.innerHTML='Ahora tocá el <b>Punto B</b>';
+  else st.innerHTML='✓ Puntos marcados. Ingresá la medida en mm.';
+}
+
+function tryCalcRatio() {
+  var mm = parseFloat(document.getElementById('cmm').value);
+  if (!mm || mm<=0 || S.calibPts.length<2) {
+    document.getElementById('bn3').disabled=true;
+    return;
+  }
+  var a=S.calibPts[0], b=S.calibPts[1];
+  var canvasPx = Math.sqrt(Math.pow(b.x-a.x,2)+Math.pow(b.y-a.y,2));
+  var origPx = canvasPx / S.calibScale;
+  S.pxPerMm = origPx / mm;
+  document.getElementById('cratio').textContent = S.pxPerMm.toFixed(2);
+  document.getElementById('cinfo').style.display='block';
+  document.getElementById('bn3').disabled = false;
+}
+
+function resetCalib() {
+  S.calibPts=[];
+  S.pxPerMm=null;
+  document.getElementById('cmm').value='';
+  document.getElementById('bn3').disabled=true;
+  document.getElementById('cinfo').style.display='none';
+  drawCalib();
+  updateCalibStatus();
+}
+
+document.getElementById('cmm').addEventListener('input', tryCalcRatio);
+
+// ═══════════════════════════════════════
+// MARCADO DE PUNTOS
+// ═══════════════════════════════════════
+var mc, mcx, markScale;
+
+function initMark() {
+  mc = document.getElementById('mc');
+  mcx = mc.getContext('2d');
+  var img = S.photoImg;
+  var wrap = document.getElementById('mark-wrap');
+  var w = wrap.offsetWidth || 320;
+  markScale = w / img.naturalWidth;
+  mc.width = w;
+  mc.height = Math.round(img.naturalHeight * markScale);
+  // fullRes canvas para zoom
+  var frm = document.createElement('canvas');
+  frm.width = mc.width; frm.height = mc.height;
+  frm.getContext('2d').drawImage(S.photoImg, 0, 0, mc.width, mc.height);
+  fullResCanvases['mc'] = frm;
+  drawMark();
+  initZoom('mc');
+
+  mc.onpointerdown = null;
+  mc._markHandler && mc.removeEventListener('pointerdown', mc._markHandler);
+  mc._markHandler = function(e) {
+    if(e.pointerType==='touch' && e.isPrimary===false) return;
+    if(window._pinching) return;
+    e.preventDefault();
+    if (!S.activePt) { toast('Seleccioná un punto primero'); return; }
+    var src = canvasToSrcCoords('mc', e.clientX, e.clientY);
+    S.pts[S.activePt] = {x: src.x/markScale, y: src.y/markScale};
+    var btn = document.getElementById('pp-'+S.activePt);
+    if(btn){btn.classList.remove('sel');btn.classList.add('ok');}
+    S.activePt = null;
+    drawMark();
+    updateMarkProg();
+  };
+  mc.addEventListener('pointerdown', mc._markHandler, {passive:false});
+}
+
+function onMarkPointer(e) {} // legacy stub
+
+function drawMark() {
+  var img = S.photoImg;
+  var fr = fullResCanvases['mc'];
+  var fctx2 = fr ? fr.getContext('2d') : mcx;
+  fctx2.drawImage(img, 0, 0, fr ? fr.width : mc.width, fr ? fr.height : mc.height);
+
+  // Dibujar cajas de aros si hay 4 puntos
+  drawBox('r-top','r-bot','r-nas','r-tem','#f7a84f',fctx2);
+  drawBox('l-top','l-bot','l-nas','l-tem','#e87af7',fctx2);
+
+  // Línea de puente
+  if(S.pts['br-r']&&S.pts['br-l']){
+    var a=toC(S.pts['br-r']), b=toC(S.pts['br-l']);
+    fctx2.beginPath(); fctx2.moveTo(a.x,a.y); fctx2.lineTo(b.x,b.y);
+    fctx2.strokeStyle='#7dd3b0'; fctx2.lineWidth=2;
+    fctx2.setLineDash([5,3]); fctx2.stroke(); fctx2.setLineDash([]);
+  }
+
+  PTDEFS.forEach(function(d){
+    var p=S.pts[d.id]; if(!p)return;
+    var cp=toC(p);
+    var isAct=S.activePt===d.id;
+    fctx2.beginPath(); fctx2.arc(cp.x,cp.y,d.r+(isAct?3:0),0,Math.PI*2);
+    fctx2.fillStyle=d.col; fctx2.fill();
+    fctx2.strokeStyle='#fff'; fctx2.lineWidth=2; fctx2.stroke();
+    var cr=d.r+6;
+    fctx2.beginPath();
+    fctx2.moveTo(cp.x-cr,cp.y); fctx2.lineTo(cp.x+cr,cp.y);
+    fctx2.moveTo(cp.x,cp.y-cr); fctx2.lineTo(cp.x,cp.y+cr);
+    fctx2.strokeStyle=d.col; fctx2.lineWidth=1.2; fctx2.stroke();
+  });
+  if(fr) redrawZoom('mc');
+}
+
+function drawBox(top,bot,nas,tem,col,ctx){
+  if(!S.pts[top]||!S.pts[bot]||!S.pts[nas]||!S.pts[tem])return;
+  var t=toC(S.pts[top]),b=toC(S.pts[bot]),n=toC(S.pts[nas]),te=toC(S.pts[tem]);
+  var x1=Math.min(n.x,te.x),x2=Math.max(n.x,te.x);
+  var y1=Math.min(t.y,b.y),y2=Math.max(t.y,b.y);
+  ctx.strokeStyle=col; ctx.lineWidth=2;
+  ctx.setLineDash([6,3]); ctx.strokeRect(x1,y1,x2-x1,y2-y1); ctx.setLineDash([]);
+}
+
+function toC(p){ return {x:p.x*markScale, y:p.y*markScale}; }
+
+function selPt(id) {
+  if(S.activePt){
+    var prev=document.getElementById('pp-'+S.activePt);
+    if(prev)prev.classList.remove('sel');
+  }
+  S.activePt=id;
+  var btn=document.getElementById('pp-'+id);
+  if(btn)btn.classList.add('sel');
+  var def=PTDEFS.find(function(d){return d.id===id;});
+  document.getElementById('minstr').textContent='→ Tocá en la imagen: '+def.lbl;
+  drawMark();
+}
+
+function resetPts(){
+  S.pts={}; S.activePt=null;
+  PTDEFS.forEach(function(d){
+    var b=document.getElementById('pp-'+d.id);
+    if(b){b.classList.remove('sel','ok');}
+  });
+  document.getElementById('pb').style.width='0%';
+  document.getElementById('bn4').disabled=true;
+  document.getElementById('minstr').textContent='Seleccioná un punto y tocalo en la imagen';
+  drawMark();
+}
+
+function updateMarkProg(){
+  var done=Object.keys(S.pts).length;
+  document.getElementById('pb').style.width=(done/TOTAL*100)+'%';
+  document.getElementById('bn4').disabled = done<TOTAL;
+  if(done>=TOTAL) document.getElementById('minstr').textContent='✓ Todos los puntos marcados. ¡Calculá!';
+}
+
+// ═══════════════════════════════════════
+// CÁLCULO
+// ═══════════════════════════════════════
+function px2mm(px){ return px/S.pxPerMm; }
+function dist(a,b){ return Math.sqrt(Math.pow(b.x-a.x,2)+Math.pow(b.y-a.y,2)); }
+function fmt(v){ return v.toFixed(1); }
+
+function calcular(){
+  var p=S.pts, r={};
+  r.dnpT = px2mm(dist(p['pd-r'],p['pd-l']));
+  var bMid = {x:(p['br-r'].x+p['br-l'].x)/2, y:(p['br-r'].y+p['br-l'].y)/2};
+  r.dnpR = px2mm(dist(p['pd-r'],bMid));
+  r.dnpL = px2mm(dist(p['pd-l'],bMid));
+  r.bridge = px2mm(dist(p['br-r'],p['br-l']));
+  r.hR = px2mm(Math.abs(p['r-top'].y-p['r-bot'].y));
+  r.hL = px2mm(Math.abs(p['l-top'].y-p['l-bot'].y));
+  r.wR = px2mm(Math.abs(p['r-nas'].x-p['r-tem'].x));
+  r.wL = px2mm(Math.abs(p['l-nas'].x-p['l-tem'].x));
+  // diagonal mayor = mayor de las dos diagonales del rectángulo del aro
+  var rD1=dist({x:p['r-nas'].x,y:p['r-top'].y},{x:p['r-tem'].x,y:p['r-bot'].y});
+  var rD2=dist({x:p['r-nas'].x,y:p['r-bot'].y},{x:p['r-tem'].x,y:p['r-top'].y});
+  r.diagR = px2mm(Math.max(rD1,rD2));
+  r.axisR = Math.round(Math.atan2(Math.abs(p['r-bot'].y-p['r-top'].y),Math.abs(p['r-tem'].x-p['r-nas'].x))*180/Math.PI);
+  var lD1=dist({x:p['l-nas'].x,y:p['l-top'].y},{x:p['l-tem'].x,y:p['l-bot'].y});
+  var lD2=dist({x:p['l-nas'].x,y:p['l-bot'].y},{x:p['l-tem'].x,y:p['l-top'].y});
+  r.diagL = px2mm(Math.max(lD1,lD2));
+  r.axisL = Math.round(Math.atan2(Math.abs(p['l-bot'].y-p['l-top'].y),Math.abs(p['l-tem'].x-p['l-nas'].x))*180/Math.PI);
+  r.phR = px2mm(Math.abs(p['pd-r'].y-p['r-bot'].y));
+  r.phL = px2mm(Math.abs(p['pd-l'].y-p['l-bot'].y));
+  r.nR = Math.max(0,r.phR-5);
+  r.nL = Math.max(0,r.phL-5);
+
+  document.getElementById('v-dnpt').textContent=fmt(r.dnpT);
+  document.getElementById('v-dnpr').textContent=fmt(r.dnpR);
+  document.getElementById('v-dnpl').textContent=fmt(r.dnpL);
+  document.getElementById('v-br').textContent=fmt(r.bridge);
+  document.getElementById('v-hr').textContent=fmt(r.hR);
+  document.getElementById('v-hl').textContent=fmt(r.hL);
+  document.getElementById('v-wr').textContent=fmt(r.wR);
+  document.getElementById('v-wl').textContent=fmt(r.wL);
+  document.getElementById('v-dr').textContent=fmt(r.diagR);
+  document.getElementById('v-dl').textContent=fmt(r.diagL);
+  document.getElementById('v-axr').textContent=r.axisR;
+  document.getElementById('v-axl').textContent=r.axisL;
+  document.getElementById('v-phr').textContent=fmt(r.phR);
+  document.getElementById('v-phl').textContent=fmt(r.phL);
+  document.getElementById('v-nr').textContent=fmt(r.nR);
+  document.getElementById('v-nl').textContent=fmt(r.nL);
+
+  document.getElementById('rn').textContent=S.name;
+  var now=new Date();
+  document.getElementById('rd').textContent=now.toLocaleDateString('es-AR')+'  '+now.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('rthumb').src=S.photoUrl;
+  S.lastR=r;
+  go(5);
+}
+
+// ═══════════════════════════════════════
+// COPIAR / NUEVA MEDICIÓN
+// ═══════════════════════════════════════
+function copiar(){
+  var r=S.lastR;
+  var t='PARÁMETROS ÓPTICOS — '+S.name+'\n';
+  t+='Fecha: '+new Date().toLocaleDateString('es-AR')+'\n';
+  if(S.notes)t+='Obs: '+S.notes+'\n';
+  t+='\n── DISTANCIA NASOPUPILAR ──\n';
+  t+='DNP Total:        '+r.dnpT.toFixed(1)+' mm\n';
+  t+='DNP OD:           '+r.dnpR.toFixed(1)+' mm\n';
+  t+='DNP OI:           '+r.dnpL.toFixed(1)+' mm\n';
+  t+='Puente:           '+r.bridge.toFixed(1)+' mm\n';
+  t+='\n── ALTURA PUPILAR (LEJOS) ──\n';
+  t+='Altura OD:        '+r.phR.toFixed(1)+' mm\n';
+  t+='Altura OI:        '+r.phL.toFixed(1)+' mm\n';
+  t+='\n── ALTURA PUPILAR (CERCA) ──\n';
+  t+='Cerca OD:         '+r.nR.toFixed(1)+' mm\n';
+  t+='Cerca OI:         '+r.nL.toFixed(1)+' mm\n';
+  t+='\n── ARMAZÓN ──\n';
+  t+='Alto OD:          '+r.hR.toFixed(1)+' mm\n';
+  t+='Alto OI:          '+r.hL.toFixed(1)+' mm\n';
+  t+='Largo OD:         '+r.wR.toFixed(1)+' mm\n';
+  t+='Largo OI:         '+r.wL.toFixed(1)+' mm\n';
+  t+='Diagonal OD:      '+r.diagR.toFixed(1)+' mm (eje '+r.axisR+'°)\n';
+  t+='Diagonal OI:      '+r.diagL.toFixed(1)+' mm (eje '+r.axisL+'°)';
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(t).then(function(){toast('✓ Copiado al portapapeles');});
+  } else {
+    var ta=document.createElement('textarea');
+    ta.value=t; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    toast('✓ Copiado al portapapeles');
+  }
+}
+
+function nueva(){ document.getElementById('moverlay').classList.add('on'); }
+function cerrarModal(){ document.getElementById('moverlay').classList.remove('on'); }
+function confirmarNueva(){
+  cerrarModal();
+  S={name:'',notes:'',photoUrl:null,photoImg:null,calibPts:[],pxPerMm:null,calibScale:1,pts:{},activePt:null};
+  document.getElementById('inp-name').value='';
+  document.getElementById('inp-notes').value='';
+  document.getElementById('hpat').textContent='Sin paciente';
+  document.getElementById('prev-img').style.display='none';
+  document.getElementById('bret').style.display='none';
+  document.getElementById('bn2').disabled=true;
+  document.getElementById('bcam').style.display='';
+  document.getElementById('cam-ph').style.display='flex';
+  go(1);
+}
+
+function toast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('on');
+  setTimeout(function(){t.classList.remove('on');},2500);
+}
+
+// Service Worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(function(){});
+}
+</script>
+</body>
+</html>
