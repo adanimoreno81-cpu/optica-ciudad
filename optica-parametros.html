@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Parámetros Ópticos — Óptica Ciudad</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Óptica Ciudad">
+<meta name="theme-color" content="#0f1117">
+
+<!-- Ícono de pantalla de inicio (fallback SVG inline para iOS sin icon PNG) -->
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #222636;
+    --border: #2e3350;
+    --accent: #4f8ef7;
+    --accent2: #7dd3b0;
+    --danger: #f76f6f;
+    --text: #e8eaf2;
+    --text2: #8b90a8;
+    --text3: #5a5f7a;
+    --radius: 12px;
+    --font: 'Inter', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  header h1 {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--text);
+  }
+  header span {
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(79,142,247,0.12);
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── STEPS NAV ── */
+  #steps-nav {
+    display: flex;
+    gap: 0;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  #steps-nav::-webkit-scrollbar { display: none; }
+  .step-tab {
+    flex: 1;
+    min-width: 70px;
+    padding: 10px 6px 8px;
+    text-align: center;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--text3);
+    border-bottom: 2px solid transparent;
+    cursor: default;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .step-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .step-tab.done {
+    color: var(--accent2);
+  }
+  .step-tab .step-num {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; padding: 20px; animation: fadeIn 0.25s ease; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin-bottom: 12px;
+  }
+
+  /* ── FORM ELEMENTS ── */
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    color: var(--text);
+    font-family: var(--font);
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 14px;
+  }
+  input:focus { border-color: var(--accent); }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 13px 20px;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s;
+    font-family: var(--font);
+    letter-spacing: 0.01em;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #3a7be8; }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-success { background: var(--accent2); color: #0f1117; }
+  .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+  .btn-sm {
+    padding: 8px 14px;
+    font-size: 12px;
+    width: auto;
+    border-radius: 8px;
+  }
+  .btn-gap { margin-top: 10px; }
+
+  /* ── SCREEN 1: Paciente ── */
+  .info-box {
+    background: rgba(79,142,247,0.08);
+    border: 1px solid rgba(79,142,247,0.2);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .info-box strong { color: var(--accent); }
+
+  /* ── SCREEN 2: Foto ── */
+  #camera-area {
+    position: relative;
+    background: #000;
+    border-radius: var(--radius);
+    overflow: hidden;
+    aspect-ratio: 3/4;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #video { width: 100%; height: 100%; object-fit: cover; display: none; }
+  #photo-preview { width: 100%; height: 100%; object-fit: contain; display: none; }
+  #camera-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: var(--text3);
+  }
+  #camera-placeholder svg { width: 48px; height: 48px; opacity: 0.4; }
+  #camera-placeholder p { font-size: 13px; }
+  #canvas { display: none; }
+  .cam-btns { display: flex; gap: 10px; }
+  .cam-btns .btn { flex: 1; }
+
+  /* ── SCREEN 3: Calibración ── */
+  #calib-canvas-wrap {
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: #000;
+    margin-bottom: 14px;
+    touch-action: none;
+  }
+  #calib-canvas { display: block; width: 100%; touch-action: none; cursor: crosshair; }
+  .calib-legend {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .calib-dot {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .dot-a { background: #f7a84f; }
+  .dot-b { background: #f74f8e; }
+  .calib-status {
+    font-size: 12px;
+    color: var(--text2);
+    text-align: center;
+    padding: 8px;
+    background: var(--surface2);
+    border-radius: 8px;
+    margin-bottom: 14px;
+  }
+  .calib-status strong { color: var(--accent); }
+  .dim-input-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    margin-bottom: 14px;
+  }
+  .dim-input-row > div { flex: 1; }
+  .dim-input-row input { margin-bottom: 0; }
+
+  /* ── SCREEN 4: Marcado ── */
+  #mark-canvas-wrap {
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: #000;
+    margin-bottom: 14px;
+    touch-action: none;
+  }
+  #mark-canvas { display: block; width: 100%; touch-action: none; cursor: crosshair; }
+
+  .points-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .point-btn {
+    padding: 10px 8px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: var(--surface2);
+    color: var(--text2);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    font-family: var(--font);
+    letter-spacing: 0.02em;
+  }
+  .point-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .point-btn.selected { border-color: var(--accent); background: rgba(79,142,247,0.15); color: var(--accent); }
+  .point-btn.done-pt { border-color: var(--accent2); color: var(--accent2); background: rgba(125,211,176,0.1); }
+  .point-btn .pt-icon { font-size: 16px; display: block; margin-bottom: 3px; }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 8px;
+    margin-top: 4px;
+  }
+
+  /* ── SCREEN 5: Resultados ── */
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .result-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 10px;
+    text-align: center;
+  }
+  .result-item.full-width {
+    grid-column: 1 / -1;
+  }
+  .result-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+  .result-value {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .result-unit {
+    font-size: 12px;
+    color: var(--text2);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  .result-sub {
+    font-size: 11px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+  .results-section-title {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin: 18px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .patient-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+  .patient-name-big {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .patient-date {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+  .result-thumb {
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 2px solid var(--border);
+  }
+
+  /* ── MODAL ── */
+  #modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  #modal-overlay.show { display: flex; }
+  #modal {
+    background: var(--surface);
+    border-radius: 16px 16px 0 0;
+    padding: 24px 20px 36px;
+    width: 100%;
+    max-width: 500px;
+    border-top: 1px solid var(--border);
+  }
+  #modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+  #modal p { font-size: 13px; color: var(--text2); margin-bottom: 18px; line-height: 1.6; }
+  .modal-btns { display: flex; flex-direction: column; gap: 10px; }
+
+  /* ── PROGRESS ── */
+  .progress-bar-wrap {
+    width: 100%;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    z-index: 300;
+    transition: transform 0.3s ease;
+    white-space: nowrap;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Utilities */
+  .mt-8 { margin-top: 8px; }
+  .mt-12 { margin-top: 12px; }
+  .flex-row { display: flex; gap: 10px; }
+  .flex-row .btn { flex: 1; }
+
+  /* File input hidden */
+  #file-input { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚗️ Parámetros Ópticos</h1>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button id="install-btn" onclick="promptInstall()" style="display:none;align-items:center;gap:5px;background:rgba(79,142,247,0.15);border:1px solid rgba(79,142,247,0.35);color:#4f8ef7;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">
+      ⬇ Instalar app
+    </button>
+    <span id="header-patient">Sin paciente</span>
+  </div>
+</header>
+
+<nav id="steps-nav">
+  <div class="step-tab active" id="tab-1"><span class="step-num">①</span>PACIENTE</div>
+  <div class="step-tab" id="tab-2"><span class="step-num">②</span>FOTO</div>
+  <div class="step-tab" id="tab-3"><span class="step-num">③</span>ESCALA</div>
+  <div class="step-tab" id="tab-4"><span class="step-num">④</span>PUNTOS</div>
+  <div class="step-tab" id="tab-5"><span class="step-num">⑤</span>RESULTADO</div>
+</nav>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN 1 — DATOS DEL PACIENTE
+═══════════════════════════════════════════ -->
+<div class="screen active" id="screen-1">
+  <div class="card">
+    <div class="card-title">Datos del paciente</div>
+    <label for="patient-name">Nombre y apellido</label>
+    <input type="text" id="patient-name" placeholder="Ej: García, María" autocomplete="off">
+    <label for="patient-notes">Observaciones (opcional)</label>
+    <input type="text" id="patient-notes" placeholder="Ej: montura redonda pasta negra">
+  </div>
+
+  <div class="info-box">
+    <strong>¿Cómo funciona?</strong><br>
+    Tomás una foto de frente del paciente con la montura puesta, mirada en posición primaria. Luego marcás los puntos clave sobre la imagen y la app calcula todas las medidas automáticamente.
+  </div>
+
+  <button class="btn btn-primary" onclick="goToScreen(2)">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    Continuar
+  </button>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN 2 — CAPTURA DE FOTO
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-2">
+  <div class="card">
+    <div class="card-title">Foto del paciente</div>
+    <div id="camera-area">
+      <video id="video" autoplay playsinline></video>
+      <img id="photo-preview" alt="Foto capturada">
+      <div id="camera-placeholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+        <p>Activar cámara o subir foto</p>
+      </div>
+    </div>
+    <canvas id="canvas"></canvas>
+    <div class="cam-btns">
+      <button class="btn btn-secondary btn-sm" id="btn-camera" onclick="startCamera()">
+        📷 Cámara
+      </button>
+      <button class="btn btn-secondary btn-sm" id="btn-capture" onclick="capturePhoto()" style="display:none">
+        🔴 Capturar
+      </button>
+      <button class="btn btn-secondary btn-sm" onclick="document.getElementById('file-input').click()">
+        🖼 Subir foto
+      </button>
+      <button class="btn btn-danger btn-sm" id="btn-retake" onclick="retakePhoto()" style="display:none">
+        ↺ Repetir
+      </button>
+    </div>
+    <input type="file" id="file-input" accept="image/*" capture="environment" onchange="loadFile(event)">
+  </div>
+
+  <div class="info-box">
+    El paciente debe mirar de frente, con la montura puesta en posición de uso. Cuanto más centrada y nítida la foto, mayor precisión.
+  </div>
+
+  <div class="flex-row mt-8">
+    <button class="btn btn-secondary" onclick="goToScreen(1)">← Atrás</button>
+    <button class="btn btn-primary" id="btn-next-2" onclick="goToScreen(3)" disabled>Continuar →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN 3 — CALIBRACIÓN DE ESCALA
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-3">
+  <div class="card">
+    <div class="card-title">Calibración de escala</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6">
+      Tocá dos puntos en la imagen que correspondan a una medida conocida del armazón (por ejemplo, los bordes externos del puente). Luego ingresá esa medida en mm.
+    </p>
+    <div class="calib-legend">
+      <div class="calib-dot"><div class="dot dot-a"></div> Punto A</div>
+      <div class="calib-dot"><div class="dot dot-b"></div> Punto B</div>
+    </div>
+    <div id="calib-canvas-wrap">
+      <canvas id="calib-canvas"></canvas>
+    </div>
+    <div class="calib-status" id="calib-status">Tocá el <strong>Punto A</strong> en la imagen</div>
+    <div class="dim-input-row">
+      <div>
+        <label>Medida real (mm)</label>
+        <input type="number" id="calib-mm" placeholder="Ej: 17" min="1" max="100" step="0.5">
+      </div>
+      <button class="btn btn-secondary btn-sm" style="margin-bottom:0;height:40px" onclick="resetCalib()">↺ Repetir</button>
+    </div>
+    <div id="calib-px-info" style="font-size:11px;color:var(--text3);margin-bottom:10px;display:none">
+      Distancia en px: <strong id="calib-px-val">—</strong> → <strong id="calib-ratio-val">—</strong> px/mm
+    </div>
+  </div>
+
+  <div class="info-box">
+    <strong>Medidas comunes para calibrar:</strong><br>
+    • Ancho del puente (figura en la patilla, ej: 17 o 18 mm)<br>
+    • Alto del aro (si lo conocés de antes)<br>
+    • DNP aproximada del paciente si ya la tenés
+  </div>
+
+  <div class="flex-row mt-8">
+    <button class="btn btn-secondary" onclick="goToScreen(2)">← Atrás</button>
+    <button class="btn btn-primary" id="btn-next-3" onclick="goToScreen(4)" disabled>Continuar →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN 4 — MARCADO DE PUNTOS
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-4">
+  <div class="card">
+    <div class="card-title">Marcado de puntos clave</div>
+    <div id="mark-canvas-wrap">
+      <canvas id="mark-canvas"></canvas>
+    </div>
+    <div id="mark-progress-wrap" class="progress-bar-wrap">
+      <div class="progress-bar" id="mark-progress" style="width:0%"></div>
+    </div>
+    <p id="mark-instruction" style="font-size:12px;color:var(--accent);text-align:center;margin-bottom:12px;font-weight:600">
+      Seleccioná un punto y tocalo en la imagen
+    </p>
+
+    <div class="section-label">Pupilas</div>
+    <div class="points-grid">
+      <button class="point-btn" id="pb-pd-r" onclick="selectPoint('pd-r')"><span class="pt-icon">👁</span>Pupila OD</button>
+      <button class="point-btn" id="pb-pd-l" onclick="selectPoint('pd-l')"><span class="pt-icon">👁</span>Pupila OI</button>
+    </div>
+
+    <div class="section-label">Aro derecho (OD)</div>
+    <div class="points-grid">
+      <button class="point-btn" id="pb-r-top" onclick="selectPoint('r-top')"><span class="pt-icon">⬆</span>Borde superior</button>
+      <button class="point-btn" id="pb-r-bot" onclick="selectPoint('r-bot')"><span class="pt-icon">⬇</span>Borde inferior</button>
+      <button class="point-btn" id="pb-r-nas" onclick="selectPoint('r-nas')"><span class="pt-icon">◀</span>Borde nasal</button>
+      <button class="point-btn" id="pb-r-tem" onclick="selectPoint('r-tem')"><span class="pt-icon">▶</span>Borde temporal</button>
+    </div>
+
+    <div class="section-label">Aro izquierdo (OI)</div>
+    <div class="points-grid">
+      <button class="point-btn" id="pb-l-top" onclick="selectPoint('l-top')"><span class="pt-icon">⬆</span>Borde superior</button>
+      <button class="point-btn" id="pb-l-bot" onclick="selectPoint('l-bot')"><span class="pt-icon">⬇</span>Borde inferior</button>
+      <button class="point-btn" id="pb-l-nas" onclick="selectPoint('l-nas')"><span class="pt-icon">▶</span>Borde nasal</button>
+      <button class="point-btn" id="pb-l-tem" onclick="selectPoint('l-tem')"><span class="pt-icon">◀</span>Borde temporal</button>
+    </div>
+
+    <div class="section-label">Puente</div>
+    <div class="points-grid">
+      <button class="point-btn" id="pb-bridge-r" onclick="selectPoint('bridge-r')"><span class="pt-icon">🔲</span>Inicio puente (OD)</button>
+      <button class="point-btn" id="pb-bridge-l" onclick="selectPoint('bridge-l')"><span class="pt-icon">🔲</span>Fin puente (OI)</button>
+    </div>
+
+    <button class="btn btn-danger btn-sm btn-gap" onclick="resetPoints()">↺ Borrar todos los puntos</button>
+  </div>
+
+  <div class="flex-row mt-8">
+    <button class="btn btn-secondary" onclick="goToScreen(3)">← Atrás</button>
+    <button class="btn btn-primary" id="btn-next-4" onclick="calculateAndShow()" disabled>Calcular →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN 5 — RESULTADOS
+═══════════════════════════════════════════ -->
+<div class="screen" id="screen-5">
+  <div class="patient-header">
+    <div>
+      <div class="patient-name-big" id="res-patient-name">—</div>
+      <div class="patient-date" id="res-date">—</div>
+    </div>
+    <img class="result-thumb" id="res-thumb" src="" alt="">
+  </div>
+
+  <div class="results-section-title">Distancia nasopupilar</div>
+  <div class="results-grid">
+    <div class="result-item">
+      <div class="result-label">DNP Total</div>
+      <div class="result-value" id="r-dnp-total">—</div>
+      <div class="result-unit">mm</div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">DNP Monocular OD</div>
+      <div class="result-value" id="r-dnp-r">—</div>
+      <div class="result-unit">mm</div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">DNP Monocular OI</div>
+      <div class="result-value" id="r-dnp-l">—</div>
+      <div class="result-unit">mm</div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">Ancho puente</div>
+      <div class="result-value" id="r-bridge">—</div>
+      <div class="result-unit">mm</div>
+    </div>
+  </div>
+
+  <div class="results-section-title">Alturas pupilares (lejos)</div>
+  <div class="results-grid">
+    <div class="result-item">
+      <div class="result-label">Altura pupilar OD</div>
+      <div class="result-value" id="r-ph-r">—</div>
+      <div class="result-unit">mm desde borde inferior</div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">Altura pupilar OI</div>
+      <div class="result-value" id="r-ph-l">—</div>
+      <div class="result-unit">mm desde borde inferior</div>
+    </div>
+  </div>
+
+  <div class="results-section-title">Alturas pupilares (cerca)</div>
+  <div class="results-grid">
+    <div class="result-item">
+      <div class="result-label">Alt. visión próxima OD</div>
+      <div class="result-value" id="r-near-r">—</div>
+      <div class="result-unit">mm desde borde inferior</div>
+      <div class="result-sub">lejos − 5 mm</div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">Alt. visión próxima OI</div>
+      <div class="result-value" id="r-near-l">—</div>
+      <div class="result-unit">mm desde borde inferior</div>
+      <div class="result-sub">lejos − 5 mm</div>
+    </div>
+  </div>
+
+  <div class="results-section-title">Medidas del armazón</div>
+  <div class="results-grid">
+    <div class="result-item">
+      <div class="result-label">Alto armazón OD</div>
+      <div class="result-value" id="r-h-r">—</div>
+      <div class="result-unit">mm</div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">Alto armazón OI</div>
+      <div class="result-value" id="r-h-l">—</div>
+      <div class="result-unit">mm</div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">Largo aro OD</div>
+      <div class="result-value" id="r-w-r">—</div>
+      <div class="result-unit">mm</div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">Largo aro OI</div>
+      <div class="result-value" id="r-w-l">—</div>
+      <div class="result-unit">mm</div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">Diagonal mayor OD</div>
+      <div class="result-value" id="r-diag-r">—</div>
+      <div class="result-unit">mm</div>
+      <div class="result-sub">eje: <span id="r-axis-r">—</span>°</div>
+    </div>
+    <div class="result-item">
+      <div class="result-label">Diagonal mayor OI</div>
+      <div class="result-value" id="r-diag-l">—</div>
+      <div class="result-unit">mm</div>
+      <div class="result-sub">eje: <span id="r-axis-l">—</span>°</div>
+    </div>
+  </div>
+
+  <div class="results-section-title">Acciones</div>
+  <button class="btn btn-primary" onclick="copyResults()">📋 Copiar medidas</button>
+  <button class="btn btn-secondary mt-8" onclick="newMeasurement()">＋ Nueva medición</button>
+
+  <div id="modal-overlay">
+    <div id="modal">
+      <h3>¿Nueva medición?</h3>
+      <p>Se va a borrar la sesión actual. ¿Querés continuar?</p>
+      <div class="modal-btns">
+        <button class="btn btn-primary" onclick="confirmNew()">Sí, nueva medición</button>
+        <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast">✓ Copiado al portapapeles</div>
+
+<script>
+// ═══════════════════════════════════
+// STATE
+// ═══════════════════════════════════
+const state = {
+  currentScreen: 1,
+  patientName: '',
+  patientNotes: '',
+  photoDataUrl: null,
+  photoImg: null,
+  calibPts: [],       // [{x,y}] in canvas coords (display)
+  calibPxPerMm: null,
+  calibMm: null,
+  points: {},         // { 'pd-r': {x,y}, ... } in original image coords
+  activePoint: null,
+  results: {}
+};
+
+const POINT_DEFS = [
+  { id: 'pd-r',     label: 'Pupila OD',          color: '#4f8ef7', size: 7 },
+  { id: 'pd-l',     label: 'Pupila OI',           color: '#4f8ef7', size: 7 },
+  { id: 'r-top',    label: 'Borde sup OD',        color: '#f7a84f', size: 5 },
+  { id: 'r-bot',    label: 'Borde inf OD',        color: '#f7a84f', size: 5 },
+  { id: 'r-nas',    label: 'Borde nasal OD',      color: '#f7a84f', size: 5 },
+  { id: 'r-tem',    label: 'Borde temporal OD',   color: '#f7a84f', size: 5 },
+  { id: 'l-top',    label: 'Borde sup OI',        color: '#e87af7', size: 5 },
+  { id: 'l-bot',    label: 'Borde inf OI',        color: '#e87af7', size: 5 },
+  { id: 'l-nas',    label: 'Borde nasal OI',      color: '#e87af7', size: 5 },
+  { id: 'l-tem',    label: 'Borde temporal OI',   color: '#e87af7', size: 5 },
+  { id: 'bridge-r', label: 'Inicio puente',       color: '#7dd3b0', size: 5 },
+  { id: 'bridge-l', label: 'Fin puente',          color: '#7dd3b0', size: 5 },
+];
+const TOTAL_POINTS = POINT_DEFS.length;
+
+// ═══════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════
+function goToScreen(n) {
+  if (n === 2) {
+    state.patientName = document.getElementById('patient-name').value.trim() || 'Paciente';
+    state.patientNotes = document.getElementById('patient-notes').value.trim();
+    document.getElementById('header-patient').textContent = state.patientName;
+  }
+  if (n === 3 && !state.photoDataUrl) { showToast('Primero tomá o subí una foto'); return; }
+  if (n === 4) { initMarkCanvas(); }
+  if (n === 3) { initCalibCanvas(); }
+
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + n).classList.add('active');
+
+  document.querySelectorAll('.step-tab').forEach((t, i) => {
+    t.classList.remove('active', 'done');
+    if (i + 1 < n) t.classList.add('done');
+    if (i + 1 === n) t.classList.add('active');
+  });
+  state.currentScreen = n;
+  window.scrollTo(0, 0);
+}
+
+// ═══════════════════════════════════
+// CAMERA
+// ═══════════════════════════════════
+let stream = null;
+async function startCamera() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } } });
+    const video = document.getElementById('video');
+    video.srcObject = stream;
+    video.style.display = 'block';
+    document.getElementById('camera-placeholder').style.display = 'none';
+    document.getElementById('btn-camera').style.display = 'none';
+    document.getElementById('btn-capture').style.display = '';
+  } catch(e) {
+    showToast('No se pudo acceder a la cámara. Usá "Subir foto".');
+  }
+}
+
+function capturePhoto() {
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  state.photoDataUrl = canvas.toDataURL('image/jpeg', 0.95);
+  stopStream();
+  showPhotoPreview();
+}
+
+function stopStream() {
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+}
+
+function loadFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    state.photoDataUrl = ev.target.result;
+    stopStream();
+    showPhotoPreview();
+  };
+  reader.readAsDataURL(file);
+}
+
+function showPhotoPreview() {
+  const img = document.getElementById('photo-preview');
+  img.src = state.photoDataUrl;
+  img.style.display = 'block';
+  document.getElementById('video').style.display = 'none';
+  document.getElementById('camera-placeholder').style.display = 'none';
+  document.getElementById('btn-camera').style.display = 'none';
+  document.getElementById('btn-capture').style.display = 'none';
+  document.getElementById('btn-retake').style.display = '';
+  document.getElementById('btn-next-2').disabled = false;
+
+  state.photoImg = new Image();
+  state.photoImg.src = state.photoDataUrl;
+}
+
+function retakePhoto() {
+  state.photoDataUrl = null;
+  state.photoImg = null;
+  document.getElementById('photo-preview').style.display = 'none';
+  document.getElementById('btn-retake').style.display = 'none';
+  document.getElementById('btn-next-2').disabled = true;
+  document.getElementById('btn-camera').style.display = '';
+  document.getElementById('camera-placeholder').style.display = 'flex';
+}
+
+// ═══════════════════════════════════
+// CALIBRATION CANVAS
+// ═══════════════════════════════════
+let calibCanvas, calibCtx, calibImgW, calibImgH, calibScale;
+
+function initCalibCanvas() {
+  calibCanvas = document.getElementById('calib-canvas');
+  calibCtx = calibCanvas.getContext('2d');
+  state.calibPts = [];
+  state.calibPxPerMm = null;
+  document.getElementById('btn-next-3').disabled = true;
+  document.getElementById('calib-px-info').style.display = 'none';
+
+  const img = state.photoImg;
+  img.onload = drawCalibCanvas;
+  if (img.complete) drawCalibCanvas();
+
+  calibCanvas.removeEventListener('click', onCalibClick);
+  calibCanvas.removeEventListener('touchend', onCalibTouch);
+  calibCanvas.addEventListener('click', onCalibClick);
+  calibCanvas.addEventListener('touchend', onCalibTouch);
+}
+
+function drawCalibCanvas() {
+  const img = state.photoImg;
+  const wrap = document.getElementById('calib-canvas-wrap');
+  const maxW = wrap.clientWidth;
+  calibScale = maxW / img.naturalWidth;
+  calibCanvas.width = maxW;
+  calibCanvas.height = img.naturalHeight * calibScale;
+  calibCtx.drawImage(img, 0, 0, calibCanvas.width, calibCanvas.height);
+
+  state.calibPts.forEach((p, i) => {
+    calibCtx.beginPath();
+    calibCtx.arc(p.x, p.y, 8, 0, Math.PI * 2);
+    calibCtx.fillStyle = i === 0 ? '#f7a84f' : '#f74f8e';
+    calibCtx.fill();
+    calibCtx.font = 'bold 11px Inter,system-ui';
+    calibCtx.fillText(i === 0 ? 'A' : 'B', p.x + 10, p.y - 4);
+  });
+
+  if (state.calibPts.length === 2) {
+    const [a, b] = state.calibPts;
+    calibCtx.beginPath();
+    calibCtx.moveTo(a.x, a.y);
+    calibCtx.lineTo(b.x, b.y);
+    calibCtx.strokeStyle = '#fff';
+    calibCtx.lineWidth = 1.5;
+    calibCtx.setLineDash([4, 4]);
+    calibCtx.stroke();
+    calibCtx.setLineDash([]);
+  }
+
+  // Update status
+  const s = document.getElementById('calib-status');
+  if (state.calibPts.length === 0) s.innerHTML = 'Tocá el <strong>Punto A</strong> en la imagen';
+  else if (state.calibPts.length === 1) s.innerHTML = 'Ahora tocá el <strong>Punto B</strong>';
+  else s.innerHTML = '✓ Dos puntos marcados. Ingresá la medida en mm.';
+
+  updateCalibRatio();
+}
+
+function getCanvasCoords(canvas, e) {
+  const rect = canvas.getBoundingClientRect();
+  let cx, cy;
+  if (e.touches) {
+    cx = e.touches[0].clientX - rect.left;
+    cy = e.touches[0].clientY - rect.top;
+  } else {
+    cx = e.clientX - rect.left;
+    cy = e.clientY - rect.top;
+  }
+  return { x: cx * (canvas.width / rect.width), y: cy * (canvas.height / rect.height) };
+}
+
+function onCalibClick(e) { addCalibPoint(getCanvasCoords(calibCanvas, e)); }
+function onCalibTouch(e) { e.preventDefault(); addCalibPoint(getCanvasCoords(calibCanvas, e.changedTouches[0])); }
+
+function addCalibPoint(pt) {
+  if (state.calibPts.length >= 2) return;
+  state.calibPts.push(pt);
+  drawCalibCanvas();
+}
+
+function resetCalib() {
+  state.calibPts = [];
+  state.calibPxPerMm = null;
+  document.getElementById('btn-next-3').disabled = true;
+  document.getElementById('calib-px-info').style.display = 'none';
+  drawCalibCanvas();
+}
+
+function updateCalibRatio() {
+  if (state.calibPts.length < 2) return;
+  const mm = parseFloat(document.getElementById('calib-mm').value);
+  if (!mm || mm <= 0) return;
+  const [a, b] = state.calibPts;
+  const pxDist = Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2);
+  // pxDist is in display pixels, convert to original image pixels
+  const origPxDist = pxDist / calibScale * (state.photoImg.naturalWidth / calibCanvas.width * calibScale);
+  // simpler: pxDist is already in canvas px, calibScale maps original px to canvas px
+  const origPx = pxDist / calibScale;
+  state.calibPxPerMm = origPx / mm;
+  state.calibMm = mm;
+
+  document.getElementById('calib-px-val').textContent = Math.round(pxDist);
+  document.getElementById('calib-ratio-val').textContent = state.calibPxPerMm.toFixed(2);
+  document.getElementById('calib-px-info').style.display = 'block';
+  document.getElementById('btn-next-3').disabled = false;
+}
+
+document.getElementById('calib-mm').addEventListener('input', updateCalibRatio);
+
+// ═══════════════════════════════════
+// MARKING CANVAS
+// ═══════════════════════════════════
+let markCanvas, markCtx, markScale;
+
+function initMarkCanvas() {
+  markCanvas = document.getElementById('mark-canvas');
+  markCtx = markCanvas.getContext('2d');
+
+  const img = state.photoImg;
+  const wrap = document.getElementById('mark-canvas-wrap');
+  const maxW = wrap.clientWidth;
+  markScale = maxW / img.naturalWidth;
+  markCanvas.width = maxW;
+  markCanvas.height = img.naturalHeight * markScale;
+
+  drawMarkCanvas();
+
+  markCanvas.removeEventListener('click', onMarkClick);
+  markCanvas.removeEventListener('touchend', onMarkTouch);
+  markCanvas.addEventListener('click', onMarkClick);
+  markCanvas.addEventListener('touchend', onMarkTouch);
+}
+
+function drawMarkCanvas() {
+  const img = state.photoImg;
+  markCtx.drawImage(img, 0, 0, markCanvas.width, markCanvas.height);
+
+  // Draw overlay for OD frame
+  const pts = state.points;
+  if (pts['r-top'] && pts['r-bot'] && pts['r-nas'] && pts['r-tem']) {
+    drawFrameBox(pts['r-top'], pts['r-bot'], pts['r-nas'], pts['r-tem'], '#f7a84f');
+  }
+  if (pts['l-top'] && pts['l-bot'] && pts['l-nas'] && pts['l-tem']) {
+    drawFrameBox(pts['l-top'], pts['l-bot'], pts['l-nas'], pts['l-tem'], '#e87af7');
+  }
+  if (pts['bridge-r'] && pts['bridge-l']) {
+    const bR = toCanvas(pts['bridge-r']);
+    const bL = toCanvas(pts['bridge-l']);
+    markCtx.beginPath();
+    markCtx.moveTo(bR.x, bR.y);
+    markCtx.lineTo(bL.x, bL.y);
+    markCtx.strokeStyle = '#7dd3b0';
+    markCtx.lineWidth = 2;
+    markCtx.setLineDash([4, 3]);
+    markCtx.stroke();
+    markCtx.setLineDash([]);
+  }
+
+  POINT_DEFS.forEach(def => {
+    const p = pts[def.id];
+    if (!p) return;
+    const cp = toCanvas(p);
+    const isActive = state.activePoint === def.id;
+    markCtx.beginPath();
+    markCtx.arc(cp.x, cp.y, def.size + (isActive ? 3 : 0), 0, Math.PI * 2);
+    markCtx.fillStyle = def.color;
+    markCtx.fill();
+    markCtx.strokeStyle = '#fff';
+    markCtx.lineWidth = 1.5;
+    markCtx.stroke();
+
+    // crosshair
+    markCtx.beginPath();
+    markCtx.moveTo(cp.x - (def.size + 5), cp.y);
+    markCtx.lineTo(cp.x + (def.size + 5), cp.y);
+    markCtx.moveTo(cp.x, cp.y - (def.size + 5));
+    markCtx.lineTo(cp.x, cp.y + (def.size + 5));
+    markCtx.strokeStyle = def.color;
+    markCtx.lineWidth = 1;
+    markCtx.stroke();
+  });
+}
+
+function drawFrameBox(top, bot, nas, tem, color) {
+  const t = toCanvas(top), b = toCanvas(bot), n = toCanvas(nas), te = toCanvas(tem);
+  const x1 = Math.min(n.x, te.x), x2 = Math.max(n.x, te.x);
+  const y1 = Math.min(t.y, b.y), y2 = Math.max(t.y, b.y);
+  markCtx.strokeStyle = color;
+  markCtx.lineWidth = 2;
+  markCtx.setLineDash([6, 3]);
+  markCtx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+  markCtx.setLineDash([]);
+}
+
+function toCanvas(p) {
+  return { x: p.x * markScale, y: p.y * markScale };
+}
+function toOrig(cx, cy) {
+  return { x: cx / markScale, y: cy / markScale };
+}
+
+function onMarkClick(e) { doMark(getCanvasCoords(markCanvas, e)); }
+function onMarkTouch(e) { e.preventDefault(); doMark(getCanvasCoords(markCanvas, e.changedTouches[0])); }
+
+function doMark(cPt) {
+  if (!state.activePoint) { showToast('Seleccioná un punto primero'); return; }
+  state.points[state.activePoint] = toOrig(cPt.x, cPt.y);
+  document.getElementById('pb-' + state.activePoint.replace(/-/g,'_')).classList.remove('selected');
+
+  const btn = document.getElementById('pb-' + state.activePoint);
+  if (btn) { btn.classList.remove('selected'); btn.classList.add('done-pt'); }
+  state.activePoint = null;
+  drawMarkCanvas();
+  updateMarkProgress();
+}
+
+function selectPoint(id) {
+  if (state.activePoint) {
+    const prev = document.getElementById('pb-' + state.activePoint);
+    if (prev) prev.classList.remove('selected');
+  }
+  state.activePoint = id;
+  const btn = document.getElementById('pb-' + id);
+  if (btn) btn.classList.add('selected');
+  document.getElementById('mark-instruction').textContent = 'Tocá en la imagen: ' + POINT_DEFS.find(p => p.id === id).label;
+  drawMarkCanvas();
+}
+
+function updateMarkProgress() {
+  const done = Object.keys(state.points).length;
+  const pct = (done / TOTAL_POINTS) * 100;
+  document.getElementById('mark-progress').style.width = pct + '%';
+  document.getElementById('btn-next-4').disabled = done < TOTAL_POINTS;
+  if (done >= TOTAL_POINTS) {
+    document.getElementById('mark-instruction').textContent = '✓ Todos los puntos marcados. ¡Calculá!';
+  }
+}
+
+function resetPoints() {
+  state.points = {};
+  state.activePoint = null;
+  POINT_DEFS.forEach(def => {
+    const btn = document.getElementById('pb-' + def.id);
+    if (btn) { btn.classList.remove('selected', 'done-pt'); }
+  });
+  document.getElementById('mark-progress').style.width = '0%';
+  document.getElementById('btn-next-4').disabled = true;
+  document.getElementById('mark-instruction').textContent = 'Seleccioná un punto y tocalo en la imagen';
+  drawMarkCanvas();
+}
+
+// ═══════════════════════════════════
+// CALCULATIONS
+// ═══════════════════════════════════
+function px2mm(px) {
+  return px / state.calibPxPerMm;
+}
+
+function dist(a, b) {
+  return Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2);
+}
+
+function calculateAndShow() {
+  const p = state.points;
+  const r = {};
+
+  // DNP total = distance between pupils
+  r.dnpTotal = px2mm(dist(p['pd-r'], p['pd-l']));
+
+  // DNP monocular: each pupil to its nasal frame edge, then bridge center
+  const bridgeMid = { x: (p['bridge-r'].x + p['bridge-l'].x) / 2, y: (p['bridge-r'].y + p['bridge-l'].y) / 2 };
+  r.dnpR = px2mm(dist(p['pd-r'], bridgeMid));
+  r.dnpL = px2mm(dist(p['pd-l'], bridgeMid));
+
+  // Bridge width
+  r.bridge = px2mm(dist(p['bridge-r'], p['bridge-l']));
+
+  // Frame heights (vertical distance between top and bottom borders)
+  r.heightR = px2mm(Math.abs(p['r-top'].y - p['r-bot'].y));
+  r.heightL = px2mm(Math.abs(p['l-top'].y - p['l-bot'].y));
+
+  // Frame widths (horizontal distance between nasal and temporal)
+  r.widthR = px2mm(Math.abs(p['r-nas'].x - p['r-tem'].x));
+  r.widthL = px2mm(Math.abs(p['l-nas'].x - p['l-tem'].x));
+
+  // Diagonal = distance from (nasal,top) corner to (temporal,bot) corner
+  const rNasX = p['r-nas'].x, rTemX = p['r-tem'].x;
+  const rTopY = p['r-top'].y, rBotY = p['r-bot'].y;
+  const diagR1 = dist({x: rNasX, y: rTopY}, {x: rTemX, y: rBotY});
+  const diagR2 = dist({x: rNasX, y: rBotY}, {x: rTemX, y: rTopY});
+  r.diagR = px2mm(Math.max(diagR1, diagR2));
+  // Axis in degrees (0–180, standard optical convention)
+  // Angle of the longer diagonal from horizontal
+  const dxR = Math.abs(rTemX - rNasX), dyR = Math.abs(rBotY - rTopY);
+  r.axisR = Math.round(Math.atan2(dyR, dxR) * 180 / Math.PI);
+
+  const lNasX = p['l-nas'].x, lTemX = p['l-tem'].x;
+  const lTopY = p['l-top'].y, lBotY = p['l-bot'].y;
+  const diagL1 = dist({x: lNasX, y: lTopY}, {x: lTemX, y: lBotY});
+  const diagL2 = dist({x: lNasX, y: lBotY}, {x: lTemX, y: lTopY});
+  r.diagL = px2mm(Math.max(diagL1, diagL2));
+  const dxL = Math.abs(lTemX - lNasX), dyL = Math.abs(lBotY - lTopY);
+  r.axisL = Math.round(Math.atan2(dyL, dxL) * 180 / Math.PI);
+
+  // Pupil height = distance from pupil to inferior border of frame
+  r.phR = px2mm(Math.abs(p['pd-r'].y - p['r-bot'].y));
+  r.phL = px2mm(Math.abs(p['pd-l'].y - p['l-bot'].y));
+
+  // Near vision height = pupil height - 5mm (standard addition)
+  r.nearR = Math.max(0, r.phR - 5);
+  r.nearL = Math.max(0, r.phL - 5);
+
+  state.results = r;
+
+  // Display
+  const fmt = v => v.toFixed(1);
+  document.getElementById('r-dnp-total').textContent = fmt(r.dnpTotal);
+  document.getElementById('r-dnp-r').textContent = fmt(r.dnpR);
+  document.getElementById('r-dnp-l').textContent = fmt(r.dnpL);
+  document.getElementById('r-bridge').textContent = fmt(r.bridge);
+  document.getElementById('r-h-r').textContent = fmt(r.heightR);
+  document.getElementById('r-h-l').textContent = fmt(r.heightL);
+  document.getElementById('r-w-r').textContent = fmt(r.widthR);
+  document.getElementById('r-w-l').textContent = fmt(r.widthL);
+  document.getElementById('r-diag-r').textContent = fmt(r.diagR);
+  document.getElementById('r-diag-l').textContent = fmt(r.diagL);
+  document.getElementById('r-axis-r').textContent = r.axisR;
+  document.getElementById('r-axis-l').textContent = r.axisL;
+  document.getElementById('r-ph-r').textContent = fmt(r.phR);
+  document.getElementById('r-ph-l').textContent = fmt(r.phL);
+  document.getElementById('r-near-r').textContent = fmt(r.nearR);
+  document.getElementById('r-near-l').textContent = fmt(r.nearL);
+
+  document.getElementById('res-patient-name').textContent = state.patientName;
+  const now = new Date();
+  document.getElementById('res-date').textContent = now.toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit', year:'numeric' }) + ' · ' + now.toLocaleTimeString('es-AR', { hour:'2-digit', minute:'2-digit' });
+  document.getElementById('res-thumb').src = state.photoDataUrl;
+
+  goToScreen(5);
+}
+
+// ═══════════════════════════════════
+// COPY RESULTS
+// ═══════════════════════════════════
+function copyResults() {
+  const r = state.results;
+  const fmt = v => v.toFixed(1);
+  const text = `PARÁMETROS ÓPTICOS — ${state.patientName}
+Fecha: ${new Date().toLocaleDateString('es-AR')}
+${state.patientNotes ? 'Obs: ' + state.patientNotes + '\n' : ''}
+── DISTANCIA NASOPUPILAR ──
+DNP Total:       ${fmt(r.dnpTotal)} mm
+DNP OD:          ${fmt(r.dnpR)} mm
+DNP OI:          ${fmt(r.dnpL)} mm
+Puente:          ${fmt(r.bridge)} mm
+
+── ALTURAS PUPILARES (LEJOS) ──
+Altura OD:       ${fmt(r.phR)} mm
+Altura OI:       ${fmt(r.phL)} mm
+
+── ALTURAS PUPILARES (CERCA) ──
+Altura próx OD:  ${fmt(r.nearR)} mm
+Altura próx OI:  ${fmt(r.nearL)} mm
+
+── ARMAZÓN ──
+Alto OD:         ${fmt(r.heightR)} mm
+Alto OI:         ${fmt(r.heightL)} mm
+Largo OD:        ${fmt(r.widthR)} mm
+Largo OI:        ${fmt(r.widthL)} mm
+Diagonal OD:     ${fmt(r.diagR)} mm (eje ${r.axisR}°)
+Diagonal OI:     ${fmt(r.diagL)} mm (eje ${r.axisL}°)`;
+
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => showToast('✓ Copiado al portapapeles'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('✓ Copiado al portapapeles');
+  }
+}
+
+// ═══════════════════════════════════
+// NEW MEASUREMENT
+// ═══════════════════════════════════
+function newMeasurement() {
+  document.getElementById('modal-overlay').classList.add('show');
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('show');
+}
+function confirmNew() {
+  closeModal();
+  state.photoDataUrl = null;
+  state.photoImg = null;
+  state.calibPts = [];
+  state.calibPxPerMm = null;
+  state.points = {};
+  state.activePoint = null;
+  state.results = {};
+  document.getElementById('patient-name').value = '';
+  document.getElementById('patient-notes').value = '';
+  document.getElementById('header-patient').textContent = 'Sin paciente';
+  document.getElementById('photo-preview').style.display = 'none';
+  document.getElementById('btn-retake').style.display = 'none';
+  document.getElementById('btn-next-2').disabled = true;
+  document.getElementById('btn-camera').style.display = '';
+  document.getElementById('camera-placeholder').style.display = 'flex';
+  document.getElementById('calib-mm').value = '';
+  goToScreen(1);
+}
+
+// ═══════════════════════════════════
+// TOAST
+// ═══════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ═══════════════════════════════════
+// POINT BUTTON ID FIX
+// map 'pd-r' → 'pb-pd-r' etc
+// ═══════════════════════════════════
+// The buttons are already id="pb-<id>" so we use that directly in selectPoint
+// We need to fix the doMark function to use the correct id pattern
+function selectPoint(id) {
+  if (state.activePoint) {
+    const prev = document.getElementById('pb-' + state.activePoint);
+    if (prev) { prev.classList.remove('selected'); }
+  }
+  state.activePoint = id;
+  const btn = document.getElementById('pb-' + id);
+  if (btn) btn.classList.add('selected');
+  const def = POINT_DEFS.find(p => p.id === id);
+  document.getElementById('mark-instruction').textContent = '→ Tocá en la imagen: ' + def.label;
+  drawMarkCanvas();
+}
+
+function doMark(cPt) {
+  if (!state.activePoint) { showToast('Seleccioná un punto primero'); return; }
+  state.points[state.activePoint] = toOrig(cPt.x, cPt.y);
+  const btn = document.getElementById('pb-' + state.activePoint);
+  if (btn) { btn.classList.remove('selected'); btn.classList.add('done-pt'); }
+  state.activePoint = null;
+  drawMarkCanvas();
+  updateMarkProgress();
+}
+
+// ── Registro del Service Worker (PWA) ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('SW registrado:', reg.scope))
+      .catch(err => console.warn('SW error:', err));
+  });
+}
+
+// ── Banner de instalación ──
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Mostrar botón de instalación si no está instalada
+  const installBtn = document.getElementById('install-btn');
+  if (installBtn) installBtn.style.display = 'flex';
+});
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  const installBtn = document.getElementById('install-btn');
+  if (installBtn) installBtn.style.display = 'none';
+  showToast('✓ App instalada en el dispositivo');
+});
+
+function promptInstall() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(choice => {
+      deferredPrompt = null;
+      const installBtn = document.getElementById('install-btn');
+      if (installBtn) installBtn.style.display = 'none';
+    });
+  }
+}
+</script>
+</body>
+</html>
